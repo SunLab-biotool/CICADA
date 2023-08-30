@@ -5,6 +5,9 @@ CICADA (circRNA coding capability and product detection algorithm) software is a
 
 ### 1 CICADA install
 
+***Note that we also provide a website for review to test our program in case the installation of CICADA is not smooth***
+***[CICADA]http://121.196.54.69:8002/CICADA/home***
+
 #### 1.1 Clone CICADA to local from github
 ```
 git clone https://github.com/ZHOUstar1996/CICADA.git
