@@ -17,7 +17,7 @@ import shutil
 
 ########################################################################
 def rfPredict(data):
-    rf = joblib.load(curPath + '/CICADA_Parameters/Cir_RF_Predict.model')
+    rf = joblib.load(curPath + '/CICADA_Parameters/circRNA_RF_Predict.model')
     pre = rf.predict_proba(data)
     return pre
 
@@ -51,11 +51,9 @@ def translate(dna):
 ########################################################################
 def write_table_colname(table_name,label):
     if label == 1:
-        custom_cols = ["CircRNA ID","Index","Directory","product nt sequence","CircRNA sequence fold","Product score","Product start",
-        "Product end","HPCR score","Product length","Noncoding probability score","Coding probability score","Product aa sequence"]
+        custom_cols = ["circRNA ID","Strand","circRNA sequence","circRNA length","circHORF sequence","circHORF score","circHORF start","circHORF end","circHORF length","Product sequence"]
     else:
-        custom_cols = ["circRNA ID","Conservation","HPCR score","HPCR length","HPCR coverage","m6A number","Fickett score",
-        "HPCR nt sequence","Noncoding probability score","Coding probability score","HPCR aa sequence"]
+        custom_cols = ["circRNA ID","Coding probability score","HPCR sequence","HPCR length","HPCR score","HPCR coverage","Fickett score","Conservation","m6A number"]
     table_name.loc[-1] = custom_cols
     table_name.index = table_name.index + 1
     table_name.sort_index(inplace=True)
@@ -72,9 +70,9 @@ def get_maohao_info(table_name):
     table_name.iloc[:,7] = table_name.iloc[:,7].str.replace('.*:', '')
     table_name.iloc[:,8] = table_name.iloc[:,8].str.replace('.*:', '')
     table_name.iloc[:,9] = table_name.iloc[:,9].str.replace('.*:', '')
-    table_name.iloc[:,10] = table_name.iloc[:,10].astype(str)
-    table_name.iloc[:,11] = table_name.iloc[:,11].astype(str)
-    table_name.iloc[:,12] = table_name.iloc[:,12].str.replace('.*:', '')
+#    table_name.iloc[:,10] = table_name.iloc[:,10].astype(str)
+#    table_name.iloc[:,11] = table_name.iloc[:,11].astype(str)
+#    table_name.iloc[:,12] = table_name.iloc[:,12].str.replace('.*:', '')
     table_name = write_table_colname(table_name,1)
     return table_name
 
@@ -88,22 +86,23 @@ def Pre_mian(Out_Feature1, Out_Feature2, Out_Feature3, Out_Information1, Out_Inf
         data3[10] = 'null'
         data3.to_csv(Out_Feature3,sep='\t', index=False, header=False)
         information3 = pd.read_csv(Out_Information3,sep='\t',header=None)
-        information3[12] = 'null'
         information3[13] = 'null'
-        information3[15] = 'amino_acid_sequence:null'
+        information3[14] = 'null'
+        information3[16] = 'amino_acid_sequence:null'
     except pd.errors.EmptyDataError:
         data3 = pd.DataFrame()
         information3 = pd.DataFrame()
     try:
         data2 = pd.read_csv(Out_Feature2,sep=' ',header=None)
+        data2 = data2.fillna('null')
         data2[8] = 'null'
         data2[9] = 'null'
         data2[10] = [str(translate(str(i))) for i in data2[7]]
         data2.to_csv(Out_Feature2,sep='\t', index=False, header=False)
         information2 = pd.read_csv(Out_Information2,sep='\t',header=None)
-        information2[12] = 'null'
         information2[13] = 'null'
-        information2[15] = ['amino_acid_sequence:'+str(translate(str(i.split(':')[1]))) for i in information2[3]]
+        information2[14] = 'null'
+        information2[16] = 'amino_acid_sequence:null'
     except pd.errors.EmptyDataError:
         data2 = pd.DataFrame()
         information2 = pd.DataFrame()
@@ -117,9 +116,9 @@ def Pre_mian(Out_Feature1, Out_Feature2, Out_Feature3, Out_Information1, Out_Inf
         data1.to_csv(Out_Feature1,sep='\t', index=False, header=False)
         id_dict = dict(map(lambda x:[x[0].split('|')[0],(x[8],x[9])],data1.values.tolist()))
         information1 = pd.read_csv(Out_Information1,sep='\t',header=None)
-        information1[12] = information1[0].apply(lambda x:id_dict.get(x.split(':')[1])[0])
-        information1[13] = information1[0].apply(lambda x:id_dict.get(x.split(':')[1])[1])
-        information1[15] = ['amino_acid_sequence:'+str(translate(str(i.split(':')[1]))) for i in information1[3]]
+        information1[13] = information1[0].apply(lambda x:id_dict.get(x.split(':')[1])[0])
+        information1[14] = information1[0].apply(lambda x:id_dict.get(x.split(':')[1])[1])
+        information1[16] = ['amino_acid_sequence:'+str(translate(str(i.split(':')[1]))) for i in information1[3]]
         re1_1 = information1[information1.iloc[:, 2].str.split(':').str[-1] == "-"].copy()
         re1_2 = information1[information1.iloc[:, 2].str.split(':').str[-1] == "+"].copy()
         origin_Seq_len = re1_1.iloc[:, 10].str.split(':').str[-1].astype(int)
@@ -144,12 +143,12 @@ def Pre_mian(Out_Feature1, Out_Feature2, Out_Feature3, Out_Information1, Out_Inf
         data1 = pd.DataFrame()
         information1 = pd.DataFrame()
     data = pd.concat([data1, data2, data3], ignore_index=True)
+    data = data.iloc[:,[0,9,7,3,2,4,6,1,5]]
     data = write_table_colname(data,2)
     data.to_csv(Out_Feature,sep='\t', index=False, header=False)
 
     information = pd.concat([information1, information2, information3], ignore_index=True)
-    information = information.drop(information.columns[10], axis=1)
-    information = information.drop(information.columns[10], axis=1)
+    information = information.iloc[:,[0,2,12,10,3,5,6,7,9,15]]
     information = get_maohao_info(information)
     if top_num == 'all':
         information_top_all = information.groupby([0], sort=False).apply(lambda x: x.sort_values([5], ascending=False)).reset_index(drop=True)
@@ -712,7 +711,8 @@ def mainProcess(inputFile, codonArr, hash_matrix):
                 RnaOutInformation = RnaOutInformation + 'CDS_Score:' + str(MLSCDS_score_mean) + '\t'
                 RnaOutInformation = RnaOutInformation + 'Length:' + str(RnaOrfLength[m]) + '\t'
                 RnaOutInformation = RnaOutInformation + 'origin_Seq_len:' + str(Seq_len) + '\t'
-                RnaOutInformation = RnaOutInformation + 'Coding_method_j:' + str(Coding_method_j)
+                RnaOutInformation = RnaOutInformation + 'Coding_method_j:' + str(Coding_method_j) + '\t'
+                RnaOutInformation = RnaOutInformation + 'circRNA sequence:' + str(Seq) + '\t'
                 RnaOutInformation = 'CircRNA_ID:' + str(Label) + '\t' + RnaOutInformation + '\n'
                 Temp_Out_Information1.write(RnaOutInformation)
             CDS_Feature = ''
@@ -753,25 +753,26 @@ def mainProcess(inputFile, codonArr, hash_matrix):
             RnaOutInformation = ''
             RnaOutInformation = RnaOutInformation + 'Index:' + str(RnaOrfFrameIndex[0])  + '\t'
             RnaOutInformation = RnaOutInformation + 'Directory:' + str(RnaOrfDirectory[0]) + '\t'
-            RnaOutInformation = RnaOutInformation + 'Sequence:' + str(RnaOrfSequence[n]) + '\t'
+            RnaOutInformation = RnaOutInformation + 'Sequence:' + 'null' + '\t'
             RnaOutInformation = RnaOutInformation + 'Sequence_fold:' + '0' + '\t'
-            RnaOutInformation = RnaOutInformation + 'Score:' + str(RnaOrfScore[n]) + '\t'
-            RnaOutInformation = RnaOutInformation + 'Start:' + '0' + '\t'
-            RnaOutInformation = RnaOutInformation + 'End:' + '0' + '\t'
+            RnaOutInformation = RnaOutInformation + 'Score:' + 'null' + '\t'
+            RnaOutInformation = RnaOutInformation + 'Start:' + 'null' + '\t'
+            RnaOutInformation = RnaOutInformation + 'End:' + 'null' + '\t'
             RnaOutInformation = RnaOutInformation + 'CDS_Score:' + str(MLSCDS_score_mean) + '\t'
-            RnaOutInformation = RnaOutInformation + 'Length:' + str(RnaOrfLength[n]) + '\t'
+            RnaOutInformation = RnaOutInformation + 'Length:' + 'null' + '\t'
             RnaOutInformation = RnaOutInformation + 'origin_Seq_len:' + str(Seq_len) + '\t'
-            RnaOutInformation = RnaOutInformation + 'Coding_method_j:' + 'null'
-            RnaOutInformation = 'LncRNA_ID:' + str(Label) + '\t' +  RnaOutInformation + '\n'
+            RnaOutInformation = RnaOutInformation + 'Coding_method_j:' + 'null' + '\t'
+            RnaOutInformation = RnaOutInformation + 'circRNA sequence:' + str(Seq) + '\t'
+            RnaOutInformation = 'circRNA_ID:' + str(Label) + '\t' +  RnaOutInformation + '\n'
             Temp_Out_Information2.write(RnaOutInformation)
             CDS_Feature = ''
             CDS_Feature = CDS_Feature + str(CDS_conservation[0]) + ' '
-            CDS_Feature = CDS_Feature + str(CDS_Score[0]) + ' '
-            CDS_Feature = CDS_Feature + str(CDS_length[0]) + ' '
+            CDS_Feature = CDS_Feature + 'null' + ' '
+            CDS_Feature = CDS_Feature + 'null' + ' '
             CDS_Feature = CDS_Feature + str('0') + ' '
             CDS_Feature = CDS_Feature + str(number) + ' '
             CDS_Feature = CDS_Feature + str(feature_score) + ' '
-            CDS_Feature = CDS_Feature + str(CDS_sequence[0])
+            CDS_Feature = CDS_Feature + 'null'
             CDS_Feature = str(Label) + '|' + str('0') + ' ' + CDS_Feature + '\n'
             Temp_Out_Feature2.write(CDS_Feature)
             if i == len(label_Arr) - 1:
@@ -779,6 +780,7 @@ def mainProcess(inputFile, codonArr, hash_matrix):
             else:
                 Temp_Out_Feature_fasta.write(f"{Label}\r\n{Seq.upper()}\r\n")
         else:
+            Seq_len = int(Seq_len/2)
             n = 0
             RnaOutInformation = ''
             RnaOutInformation = RnaOutInformation + 'Index:' + 'null' + '\t'
@@ -790,9 +792,10 @@ def mainProcess(inputFile, codonArr, hash_matrix):
             RnaOutInformation = RnaOutInformation + 'End:' + 'null' + '\t'
             RnaOutInformation = RnaOutInformation + 'CDS_Score:' + 'null' + '\t'
             RnaOutInformation = RnaOutInformation + 'Length:' + 'null' + '\t'
-            RnaOutInformation = RnaOutInformation + 'origin_Seq_len:' + 'null' + '\t'
-            RnaOutInformation = RnaOutInformation + 'Coding_method_j:' + 'null'
-            RnaOutInformation = 'LncRNA_ID:' + str(Label) + '\t' +  RnaOutInformation + '\n'
+            RnaOutInformation = RnaOutInformation + 'origin_Seq_len:' + str(Seq_len) + '\t'
+            RnaOutInformation = RnaOutInformation + 'Coding_method_j:' + 'null'+ '\t'
+            RnaOutInformation = RnaOutInformation + 'circRNA sequence:' + str(Seq) + '\t'
+            RnaOutInformation = 'circRNA_ID:' + str(Label) + '\t' +  RnaOutInformation + '\n'
             Temp_Out_Information3.write(RnaOutInformation)
             CDS_Feature = ''
             CDS_Feature = CDS_Feature + 'null' + ' '
@@ -866,7 +869,7 @@ if __name__ == '__main__':
     outPutFileName = options.outfile
     top_num = options.top
     curPath = cur_file_dir()
-    MatrixPath = curPath + "/CICADA_Parameters/cir_score_matrix"
+    MatrixPath = curPath + "/CICADA_Parameters/circRNA_Score_Matrix"
     inMatrix = open(MatrixPath)
     Matrix = inMatrix.read()
     inMatrix.close()
