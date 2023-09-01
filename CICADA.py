@@ -723,7 +723,7 @@ def mainProcess(inputFile, codonArr, hash_matrix):
             CDS_Feature = CDS_Feature + str(number) + ' '
             CDS_Feature = CDS_Feature + str(feature_score) + ' '
             CDS_Feature = CDS_Feature + str(CDS_sequence[0])
-            CDS_Feature = str(Label) + '|' + str(j) + ' ' + CDS_Feature + '\n'
+            CDS_Feature = str(Label) + ' ' + CDS_Feature + '\n'
             Temp_Out_Feature1.write(CDS_Feature)
             if i == len(label_Arr)-1:
                 Temp_Out_Feature_fasta.write(f"{Label}\r\n{Seq.upper()}")
@@ -773,7 +773,7 @@ def mainProcess(inputFile, codonArr, hash_matrix):
             CDS_Feature = CDS_Feature + str(number) + ' '
             CDS_Feature = CDS_Feature + str(feature_score) + ' '
             CDS_Feature = CDS_Feature + 'null'
-            CDS_Feature = str(Label) + '|' + str('0') + ' ' + CDS_Feature + '\n'
+            CDS_Feature = str(Label) + ' ' + CDS_Feature + '\n'
             Temp_Out_Feature2.write(CDS_Feature)
             if i == len(label_Arr) - 1:
                 Temp_Out_Feature_fasta.write(f"{Label}\r\n{Seq.upper()}")
@@ -805,7 +805,7 @@ def mainProcess(inputFile, codonArr, hash_matrix):
             CDS_Feature = CDS_Feature + 'null' + ' '
             CDS_Feature = CDS_Feature + 'null' + ' '
             CDS_Feature = CDS_Feature + 'null'
-            CDS_Feature = str(Label) + '|' + str('0') + ' ' + CDS_Feature + '\n'
+            CDS_Feature = str(Label) + ' ' + CDS_Feature + '\n'
             Temp_Out_Feature3.write(CDS_Feature)
             if i == len(label_Arr) - 1:
                 Temp_Out_Feature_fasta.write(f"{Label}\r\n{Seq.upper()}")
