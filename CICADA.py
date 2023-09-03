@@ -14,7 +14,8 @@ import sys
 import faulthandler;faulthandler.enable()
 import uuid
 import shutil
-
+import warnings
+import os, glob
 ########################################################################
 def rfPredict(data):
     rf = joblib.load(curPath + '/CICADA_Parameters/circRNA_RF_Predict.model')
@@ -167,6 +168,12 @@ def cur_file_dir():
        return path
     elif os.path.isfile(path):
        return os.path.dirname(path)
+
+def delete_files_with_specific_character(folder, char):
+    for filename in os.listdir(folder):
+        if char in filename:
+            file_path = os.path.join(folder, filename)
+            os.remove(file_path)
 #######################################################################
 def TwoLineFasta (Seq_Array):
     Tmp_sequence_Arr = []
@@ -705,7 +712,7 @@ def mainProcess(inputFile, codonArr, hash_matrix):
                 RnaOutInformation = RnaOutInformation + 'Directory:' + str(RnaOrfDirectory[0]) + '\t'
                 RnaOutInformation = RnaOutInformation + 'Sequence:' + str(RnaOrfSequence[m]) + '\t'
                 RnaOutInformation = RnaOutInformation + 'Sequence_fold:' + str(seq_fold) + '\t'
-                RnaOutInformation = RnaOutInformation + 'Score:' + str(RnaOrfScore[m]) + '\t'
+                RnaOutInformation = RnaOutInformation + 'Score:' + str(round(float(RnaOrfScore[m]),6)) + '\t'
                 RnaOutInformation = RnaOutInformation + 'Start:' + str(RnaOrfStart[m]) + '\t'
                 RnaOutInformation = RnaOutInformation + 'End:' + str(RnaOrfStop[m]) + '\t'
                 RnaOutInformation = RnaOutInformation + 'CDS_Score:' + str(MLSCDS_score_mean) + '\t'
@@ -716,12 +723,12 @@ def mainProcess(inputFile, codonArr, hash_matrix):
                 RnaOutInformation = 'CircRNA_ID:' + str(Label) + '\t' + RnaOutInformation + '\n'
                 Temp_Out_Information1.write(RnaOutInformation)
             CDS_Feature = ''
-            CDS_Feature = CDS_Feature + str(CDS_conservation[0]) + ' '
-            CDS_Feature = CDS_Feature + str(CDS_Score[0]) + ' '
+            CDS_Feature = CDS_Feature + str(round(float(CDS_conservation[0]),6)) + ' '
+            CDS_Feature = CDS_Feature + str(round(float(CDS_Score[0]),6)) + ' '
             CDS_Feature = CDS_Feature + str(CDS_length[0]) + ' '
-            CDS_Feature = CDS_Feature + str(ML_RL[0]) + ' '
-            CDS_Feature = CDS_Feature + str(number) + ' '
-            CDS_Feature = CDS_Feature + str(feature_score) + ' '
+            CDS_Feature = CDS_Feature + str(round(float(ML_RL[0]),6)) + ' '
+            CDS_Feature = CDS_Feature + str(round(number,6)) + ' '
+            CDS_Feature = CDS_Feature + str(round(feature_score,6)) + ' '
             CDS_Feature = CDS_Feature + str(CDS_sequence[0])
             CDS_Feature = str(Label) + ' ' + CDS_Feature + '\n'
             Temp_Out_Feature1.write(CDS_Feature)
@@ -766,12 +773,12 @@ def mainProcess(inputFile, codonArr, hash_matrix):
             RnaOutInformation = 'circRNA_ID:' + str(Label) + '\t' +  RnaOutInformation + '\n'
             Temp_Out_Information2.write(RnaOutInformation)
             CDS_Feature = ''
-            CDS_Feature = CDS_Feature + str(CDS_conservation[0]) + ' '
+            CDS_Feature = CDS_Feature + 'null' + ' '
             CDS_Feature = CDS_Feature + 'null' + ' '
             CDS_Feature = CDS_Feature + 'null' + ' '
             CDS_Feature = CDS_Feature + str('0') + ' '
-            CDS_Feature = CDS_Feature + str(number) + ' '
-            CDS_Feature = CDS_Feature + str(feature_score) + ' '
+            CDS_Feature = CDS_Feature + str(round(number,6)) + ' '
+            CDS_Feature = CDS_Feature + str(round(feature_score,6)) + ' '
             CDS_Feature = CDS_Feature + 'null'
             CDS_Feature = str(Label) + ' ' + CDS_Feature + '\n'
             Temp_Out_Feature2.write(CDS_Feature)
@@ -851,7 +858,7 @@ def get_feature_score(seq):
     '''.format(os.path.join(os.getcwd(),Circ_Dir,'seq_featrue_score.fa')))
     feature_score = r['getFeatureScore']()
     return list(feature_score)[0]
-
+warnings.filterwarnings("ignore")
 if __name__ == '__main__':
     usage = "[options]"
     parse = OptionParser(usage)
@@ -938,3 +945,10 @@ if __name__ == '__main__':
     os.remove(Circ_Dir + '/Information1')
     os.remove(Circ_Dir + '/Information2')
     os.remove(Circ_Dir + '/Information3')
+    for file in glob.glob(Circ_Dir + "/*.fa"):
+       os.remove(file)
+    for file in glob.glob(Circ_Dir + "/*.txt"):
+       os.remove(file)
+    folder_path = Circ_Dir
+    character = ">"
+    delete_files_with_specific_character(folder_path, character)
