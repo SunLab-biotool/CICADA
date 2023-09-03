@@ -63,7 +63,7 @@ for ($q=1;$q<=$s;$q++)
 		}
 	}
 }
-if ($f==0){die "Error: No m6A consensus motif found\n";}
+#if ($f==0){die "Error: No m6A consensus motif found\n";}
 print "There are $f DRACH consensus motifs found in the $s input sequences\n";
 #Encoding;
 $fb=$fi."\.binarytmp";
