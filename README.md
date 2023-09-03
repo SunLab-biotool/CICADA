@@ -10,7 +10,7 @@ CICADA (circRNA coding capability and product detection algorithm) software is a
 
 #### 1.1 Clone CICADA to local from github
 ```
-git clone https://github.com/ZHOUstar1996/CICADA.git
+git clone https://github.com/SunLab-biotool/CICADA.git
 ```
 
 #### 1.2 Dependencies
@@ -50,7 +50,7 @@ pip install sklearn pandas rpy2
 [PhyloCSF]https://github.com/cpockrandt/PhyloCSFpp
 
 
-### 2 USAGE  
+### 2 Usage  
 
 ```
 python3 CICADA.py [-h] [-f] [-o] [-t]
@@ -72,8 +72,3 @@ You can use CICADA subroutines like our example:
 cd CICADA
 python3 CICADA.py -f example/example.fa -t all -o example/example_out
 ```
-
-
-
-
-
